@@ -1,27 +1,30 @@
-# TODO:
-# - lib64 patch
+# TODO: finish apidocs
+#
+# Conditional build:
+%bcond_with	doc	# Sphinx documentation
 
 %define		module	psycopg2
 Summary:	psycopg is a PostgreSQL database adapter for Python
 Summary(pl.UTF-8):	psycopg jest przeznaczonym dla Pythona interfejsem do bazy PostgreSQL
 Name:		python3-%{module}
 Version:	2.9.10
-Release:	1
-License:	GPL
+Release:	2
+License:	LGPL v3+ with OpenSSL exception
 Group:		Libraries/Python
-Source0:	https://pypi.debian.net/%{module}/%{module}-%{version}.tar.gz
+Source0:	https://pypi.debian.net/psycopg2/%{module}-%{version}.tar.gz
 # Source0-md5:	3a1ed36b492a74789563577edc0b0689
-#Patch0:		%{name}-lib64.patch
 URL:		https://www.psycopg.org/
-BuildRequires:	rpmbuild(macros) >= 1.710
-BuildRequires:	autoconf
 BuildRequires:	postgresql-backend-devel
 BuildRequires:	postgresql-devel
-BuildRequires:	python3-devel
+BuildRequires:	python3-devel >= 1:3.8
 BuildRequires:	rpm-pythonprov
+BuildRequires:	rpmbuild(macros) >= 1.714
+%if %{with doc}
+BuildRequires:	python3-sphinx-better-theme
+BuildRequires:	sphinx-pdg-3
+%endif
 Requires:	postgresql-libs
-Requires:	python3-modules
-Requires:	python3-pytz
+Requires:	python3-modules >= 1:3.8
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -40,15 +43,13 @@ psycopg jest, że w jest pełni zgodny z standardem DBAPI-2.0 i jest
 
 %prep
 %setup -q -n %{module}-%{version}
-#%if "%{_lib}" == "lib64"
-#%%patch0 -p1
-#%endif
 
 %build
 %py3_build
 
 %install
 rm -rf $RPM_BUILD_ROOT
+
 %py3_install
 
 %clean
@@ -56,10 +57,9 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc NEWS AUTHORS doc/SUCCESS
+%doc AUTHORS LICENSE NEWS README.rst
 %dir %{py3_sitedir}/%{module}
-%dir %{py3_sitedir}/%{module}/__pycache__
-%attr(755,root,root) %{py3_sitedir}/%{module}/*.so
+%{py3_sitedir}/%{module}/__pycache__
+%attr(755,root,root) %{py3_sitedir}/%{module}/_psycopg.cpython-*.so
 %{py3_sitedir}/%{module}/*.py
-%{py3_sitedir}/%{module}/__pycache__/*.py*
-%{py3_sitedir}/*.egg-info
+%{py3_sitedir}/psycopg2-%{version}-py*.egg-info
